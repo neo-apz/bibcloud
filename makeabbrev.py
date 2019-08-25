@@ -129,7 +129,8 @@ CONF = {
     "bs" : ['y',"Proceedings of the YEAR Workshop on Buffer Sizing"],
     "ancs" : ['y',"Proceedings of the YEAR ACM/IEEE Symposium on Architectures for Networking and Communications Systems (ANCS)"],
     "uai" :['o',"Proceedings of the OCCURENCE Conference on Uncertainty in Artificial Intelligence (UAI)"],
-    "usits" : ['o',"Proceedings of the OCCURENCE USENIX Symposium on Internet Technologies and Systems (USITS)"]
+    "usits" : ['o',"Proceedings of the OCCURENCE USENIX Symposium on Internet Technologies and Systems (USITS)"],
+    "date" : ['y', "Proceedings of the YEAR Design, Automation, and Test in Europe Conference and Exhibition (DATE)"]
 }
 
 SHORTCONF = {
@@ -322,7 +323,7 @@ for y in range(2016,2018):
 
 annual_occ("hpca",1,1995,2019)
 annual_occ("micro",1,1968,2020)
-
+annual_occ("uss",7,1998,2019)
 
 
 for y in range (2010,2017):
@@ -440,7 +441,7 @@ annual_year("bs",2019,2020)
 annual_year("ancs",2016,MAXYEAR)
 annual_occ("uai",26,2010,2020)
 annual_occ("apnet",1,2017,MAXYEAR)
-
+annual_year("date",2012,2019)
 
 #crazy ones:
 annual_year("iwmm",1992,1996)
