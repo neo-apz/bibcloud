@@ -108,7 +108,8 @@ CONF = {
     "hilt": ['y', "Proceedings of the YEAR ACM SIGAda annual conference on High integrity language technology"],
     "minenet": ['o', "Proceedings of the OCCURENCE Annual ACM Workshop on Mining Network Data (MineNet)"],
     "memsys" : ['y', "Proceedings of the YEAR International Symposium on Memory Systems (MEMSYS)"],
-    "oopsla" : ['o', "Proceedings of the OCCURENCE Annual ACM SIGPLAN Conference on Object-Oriented Programming, Systems, Languages, and Applications (OOPSLA)"]
+    "oopsla" : ['o', "Proceedings of the OCCURENCE Annual ACM SIGPLAN Conference on Object-Oriented Programming, Systems, Languages, and Applications (OOPSLA)"],
+    "date" : ['y', "Proceedings of the YEAR Design, Automation, and Test in Europe Conference and Exhibition (DATE)"]
 }
 
 SHORTCONF = {
@@ -250,7 +251,7 @@ for occ in range (5,13):
     F.write(make_asplos("asplos",y,occ))
 
 occ = 13
-for y in range(2008,2018):
+for y in range(2008,2020):
     F.write(make_asplos("asplos",y,occ))
     occ = occ +1
 
@@ -299,8 +300,8 @@ for y in range (2010,2011):
 for y in range(2017,2020):
     F.write(make_sigcomm("kbnets@sigcomm",y))
 
-annual_occ("hpca",1,1995,2017)
-annual_occ("micro",1,1968,2017)
+annual_occ("hpca",1,1995,2019)
+annual_occ("micro",1,1968,2019)
 annual_occ("uss",7,1998,2019)
 
 
@@ -406,6 +407,7 @@ annual_occ("mapl@pldi",1,2017,2018)
 annual_occ("bcb",8,2017,2018)
 annual_occ("minenet",1,2005,2008)
 annual_year("memsys",2015,2020)
+annual_year("date",2012,2019)
 
 #crazy ones:
 annual_year("iwmm",1992,1996)
