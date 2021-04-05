@@ -146,6 +146,15 @@ TITLESUB = {}
 
 valid_tags = set(DBLP_fieldlist.keys())
 
+def find_input(l):
+    x = l.find("\\@input{")
+    if (x >= 0):
+        y = l.find("{")
+        z = l.find("}", y)
+        return l[y+1:z]
+    else:
+        return ""
+
 ##### extraction from bibtex .aux file #########
 def find_citation(l):
     x = l.find("\\citation{")
@@ -162,7 +171,24 @@ def find_citation(l):
     
     return ""
 
-def load_references(bibname):
+def load_references(main_name):
+    lines, inputs = load_references_bib(main_name)
+
+    print("bibcould: aux files to parse next:", inputs)
+    processed_inputs = set([main_name])
+    while inputs:
+        i = inputs.pop()
+        print('bibcould: processing ', i)
+        processed_inputs.add(i)
+        new_lines, new_inputs = load_references_bib(i)
+        lines = sorted(set(lines + new_lines))
+
+        inputs += [i for i in new_inputs if i not in processed_inputs]
+        # print(inputs)
+
+    return lines
+
+def load_references_bib(bibname):
 
     global gBibStyle
 
@@ -170,39 +196,44 @@ def load_references(bibname):
         print("FATAL -- File "+bibname+" does not exist")
         sys.exit(1)
 
-    print("bibcloud: parsing ",bibname)
+    print("bibcloud: parsing ", bibname)
     lines = [line.strip() for line in open(bibname)]
 
-    BibSyle = ""
-    bibstyleline = [x for x in lines if x.find("\\bibstyle")>=0]
-    print("BIBSTYLE is ",bibstyleline)
-    if len(bibstyleline) == 1:
-        x = bibstyleline[0].split("{")
-        x = x[1].split("}")
-        gBibStyle = x[0]
-        print("BIBSTYLE (stipped)",gBibStyle)
+    bibstyleline = [x for x in lines if x.find("\\bibstyle") >= 0]
+    
+    if bibstyleline:
+        print("BIBSTYLE is ", bibstyleline)
+        if len(bibstyleline) == 1:
+            x = bibstyleline[0].split("{")
+            x = x[1].split("}")
+            gBibStyle = x[0]
+            print("BIBSTYLE (stipped)", gBibStyle)
+    
+    citations = [find_citation(line) for line in lines]
+    citations = [c.strip(" ") for c in citations if c != ""]
+    citations = [c.split(",") for c in citations]
+    citations = [y for x in citations for y in x]
 
+    inputs = [find_input(line) for line in lines]
+    inputs = [c.strip(" ") for c in inputs if c != ""]
+    inputs = [c.split(",") for c in inputs]
+    inputs = [y for x in inputs for y in x]
 
-    lines =  [find_citation(line) for line in lines]
-    lines  = [c.strip(" ") for c in lines if c != ""]
-    lines =  [c.split(",") for c in lines]
-    lines =  [y for x in lines for y in x]
-
-    return  sorted(set(lines))
+    return sorted(set(citations)), sorted(set(inputs))
 
 
 ####### strip_comments
 
 def strip_comment(l):
     pos = l.find("%")
-    if pos >=0:
-        return  l[:pos]
+    if pos >= 0:
+        return l[:pos]
     else:
         return l
 
 
 def find_revalias(c):
-    if REVALIAS.has_key(c):
+    if c in REVALIAS:
         return REVALIAS[c]
     else:
         return c
@@ -224,19 +255,19 @@ def update_dblp(citations,latex_backmap):
         print("bibcloud: No cache file found...fetching (if the problem persists, delete",LOCALFILES['cache'])
 
     foreign_citations = [c for c in citations if not c.find("DBLP:") == 0]
-    missing_citations = [c for c in citations if not DBLP_article.has_key(c) and c.find("DBLP:") == 0]
+    missing_citations = [c for c in citations if c not in DBLP_article and c.find("DBLP:") == 0]
 
     print("bibcloud:",num_children,"cached entries;",len(missing_citations)," missing citations to be fetched;",len(foreign_citations),"handled manually")
 
     #print "DEBUG MISSING CITATIONS", missing_citations
     #print "FOREIGN CITATIONS",foreign_citations
 
-    if len(missing_citations)==0:
+    if len(missing_citations) == 0:
         return
 
     for c in missing_citations:
         key = c[5:]
-        print("bibcloud: fetching",c,"for ",latex_backmap[c])
+        print("bibcloud: fetching", c, "for ", latex_backmap[c])
         print("CURL ... curl https://dblp.uni-trier.de/rec/"+key+".xml")
         os.system("curl https://dblp.uni-trier.de/rec/"+key+ ".xml >.bibcloud/tmp.xml")
         if os.path.getsize(".bibcloud/tmp.xml") >0:
@@ -247,7 +278,7 @@ def update_dblp(citations,latex_backmap):
                     root = tree.getroot()
                 else:
                     newtree = ET.parse(".bibcloud/tmp.xml")
-                    root.insert(num_children,newtree.getroot()[0])
+                    root.insert(num_children, newtree.getroot()[0])
                 num_children = num_children + 1
                 print("Updating cache ...")
                 tree.write(".bibcloud/DBLP.xml")
@@ -255,7 +286,7 @@ def update_dblp(citations,latex_backmap):
                 os.system("mv .bibcloud/tmp.xml .bibcloud/error.xml")
                 print("ERROR in XML parsing ... see file ./bibcloud/error.xml")
         else:
-            print("FETCH of ",key," failed...")
+            print("FETCH of ", key, " failed...")
         time.sleep(2)
 
 
@@ -303,7 +334,7 @@ def html_to_bibtex2(h):
         x = ""
         for c in h:
             c2 = c.encode('utf-8')
-            if HTML_TO_BIB.has_key(c):
+            if c in HTML_TO_BIB:
                 x = x + HTML_TO_BIB[c]
             else:
                 x = x + c
@@ -332,7 +363,7 @@ def escape_percent_amp(s):
 
     y = s.find("\\&")
     if y>=0:
-        print "ESCAPING - skip \\&:",s 
+        print("ESCAPING - skip \\&:",s)
         return s[:y+2] + escape_percent_amp(s[y+2:])
 
     x = s.find("%")
@@ -377,7 +408,6 @@ def output_doi_ee(url):
 # process bib file from ARVG
 print("bibcloud: This is bibcloud ... Use at your own risk ... "
        "see bibcloud.py source for documentation")
-
 
 if not os.path.exists(".bibcloud"):
     os.mkdir(".bibcloud")
@@ -439,7 +469,7 @@ for child in root:
         DBLP_article["DBLP:"+child.attrib['key']] = child
 
 F = open("dblp.bib","w")
-F.write("%%% This file is automatically genreated by bibcloud.py\n")
+F.write("%%% This file is automatically generated by bibcloud.py\n")
 F.write("%%% DO NOT EDIT\n\n\n")
 
 # generate dblp.bib file from XML
@@ -470,7 +500,7 @@ for c in dblp_citations:
                 if fieldlist[a.tag] == 'id':
                     F.write("  "+a.tag+" = {"+html_to_bibtex(a.text)+"},\n")
                 elif fieldlist[a.tag] == 'double':
-                    if a.tag == "title" and TITLESUB.has_key(a.text):
+                    if a.tag == "title" and a.text in TITLESUB:
                         F.write("  "+a.tag+" = {{"+escape_percent_amp(TITLESUB[a.text])+"}},\n")
                     else:
                         F.write("  "+a.tag+" = {{"+escape_percent_amp(html_to_bibtex(a.text))+"}},\n")
@@ -488,17 +518,17 @@ for c in dblp_citations:
         if xml.tag == "inproceedings" or xml.tag=="incollection":
             year = xml.find('year').text[2:]
             booktitle = xml.find('booktitle').text
-            if booktitle.find(" ") >0 or booktitle == "3PGCIC" or booktitle == "INFLOW@SOSP":
-                if NOACKCONFERENCE.has_key(booktitle):
+            if booktitle.find(" ") > 0 or booktitle == "3PGCIC" or booktitle == "INFLOW@SOSP":
+                if booktitle in NOACKCONFERENCE:
                     booktitle = NOACKCONFERENCE[booktitle]
-                    if booktitle.find(" ")>0:
+                    if booktitle.find(" ") > 0:
                         F.write("  booktitle = \""+booktitle+"\",\n")
                     else:
                         F.write("  booktitle = "+booktitle+year+",\n")
                 else:
-                    print("WARNING -- Unknown conference",booktitle)
+                    print("FATAL -- Unknown conference",booktitle)
                     F.write("  booktitle = \""+booktitle+"\",\n")
-                    # sys.exit(1)
+                    sys.exit(1)
             else:
                 F.write("  booktitle = "+booktitle+year+",\n")
 
