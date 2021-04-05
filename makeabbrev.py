@@ -8,6 +8,7 @@ import sys
 
 global F
 
+
 #last year should normally be current year + 1
 #use it as the end of range only for conferences that are assumed to happen annually going forward
 
@@ -130,7 +131,9 @@ CONF = {
     "ancs" : ['y',"Proceedings of the YEAR ACM/IEEE Symposium on Architectures for Networking and Communications Systems (ANCS)"],
     "uai" :['o',"Proceedings of the OCCURENCE Conference on Uncertainty in Artificial Intelligence (UAI)"],
     "usits" : ['o',"Proceedings of the OCCURENCE USENIX Symposium on Internet Technologies and Systems (USITS)"],
-    "date" : ['y', "Proceedings of the YEAR Design, Automation, and Test in Europe Conference and Exhibition (DATE)"]
+    "date" : ['y', "Proceedings of the YEAR Design, Automation, and Test in Europe Conference and Exhibition (DATE)"],
+    "ccs" : ['y',"Proceedings of the YEAR ACM SIGSAC Conference on Computer and Communications Security (CCS)"],
+    "eurosec" : ['o',"Proceedings of the OCCURENCE European Workshop on Systems Security (EUROSEC)"]
 }
 
 SHORTCONF = {
@@ -441,7 +444,9 @@ annual_year("bs",2019,2020)
 annual_year("ancs",2016,MAXYEAR)
 annual_occ("uai",26,2010,2020)
 annual_occ("apnet",1,2017,MAXYEAR)
-annual_year("date",2012,2019)
+annual_year("date",2012,MAXYEAR)
+annual_year("ccs",2010,MAXYEAR)
+annual_occ("eurosec",7,2014,MAXYEAR)
 
 #crazy ones:
 annual_year("iwmm",1992,1996)
