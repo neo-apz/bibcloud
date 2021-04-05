@@ -134,7 +134,7 @@ NOACKCONFERENCE = {
     "IEEE WISA": "IEEE WISA"
 }
 
-WORKSHOPS = ["HotOS","KBNets@SIGCOMM"]
+WORKSHOPS = ["HotOS","KBNets@SIGCOMM","APNet"]
 
 ############
 ### globals
